@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup><RootNamespace>PulseOps.Api</RootNamespace></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../PulseOps.Application/PulseOps.Application.csproj" />
+    <ProjectReference Include="../PulseOps.Infrastructure/PulseOps.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
