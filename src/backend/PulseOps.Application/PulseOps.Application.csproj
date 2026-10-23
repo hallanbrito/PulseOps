@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>PulseOps.Application</RootNamespace></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../PulseOps.Domain/PulseOps.Domain.csproj" />
+  </ItemGroup>
+</Project>
