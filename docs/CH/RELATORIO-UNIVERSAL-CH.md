@@ -1,6 +1,6 @@
 # RELATÓRIO UNIVERSAL C.H. — PulseOps
 
-> **Protocolo:** RUC/1.0. Este arquivo registra evidências da W0 e não substitui a decisão do Product Owner.
+> **Protocolo:** RUC/1.0. Este arquivo registra evidências da W0 e a decisão do Product Owner.
 
 ## 1. Identificação
 | Campo | Valor |
@@ -11,7 +11,7 @@
 | Ambiente | Linux; .NET SDK 10.0.113; Angular CLI 22; npm |
 | Baseline / branch / PR | `aa2278071bc8165cf48efa872fa4e70f0991a473` / `ch/w0-foundation-mvp` / PR #2 |
 | Horário / run_id | 2026-10-23 — sessão W0 |
-| Parecer técnico | APTO À HOMOLOGAÇÃO COM RESSALVA DOCUMENTADA |
+| Parecer técnico | HOMOLOGADO COM RESSALVA |
 
 ## 2. Resumo executivo
 A W0 estabeleceu a fundação C.H. do PulseOps, a arquitetura modular do backend .NET, um primeiro fluxo REST funcional, testes de domínio e o scaffold Angular 22. Os gates locais de build e testes passaram. A persistência permanece in-memory por decisão de escopo; PostgreSQL/EF Core ficam para a próxima fatia. O npm reportou 2 vulnerabilidades (1 low, 1 high) e 4 install scripts bloqueados; nenhum `npm audit fix --force` foi executado.
@@ -42,6 +42,7 @@ A W0 estabeleceu a fundação C.H. do PulseOps, a arquitetura modular do backend
 | E09 | Higiene do diff | `git diff --check` sem saída |
 | E10 | Árvore de trabalho limpa ao final | `git status --short` sem saída |
 | E11 | Commits publicados | `a40acd7` e `4212740` na branch da W0 |
+| E12 | Decisão do PO | `HOMOLOGADO COM RESSALVA` em 2026-10-23 |
 
 ## 5. Verificações
 | Teste | Critério | Estado | Evidência |
@@ -71,12 +72,14 @@ A W0 estabeleceu a fundação C.H. do PulseOps, a arquitetura modular do backend
 - Custo adicional: R$0 informado para esta fatia.
 
 ## 8. Recomendação técnica
-Recomenda-se **HOMOLOGAR A W0 COM RESSALVA DOCUMENTADA**, mantendo o merge dependente de decisão explícita do PO. A ressalva de dependências npm deve gerar verificação específica antes de qualquer deploy/produção. A próxima fatia técnica recomendada é W1 — persistência com EF Core + PostgreSQL, sem ampliar retroativamente o escopo da W0.
+W0 homologada com ressalva documentada. A ressalva de dependências npm deve gerar verificação específica antes de qualquer deploy/produção. A próxima fatia técnica recomendada é W1 — persistência com EF Core + PostgreSQL, sem ampliar retroativamente o escopo da W0.
 
-## 9. Decisão necessária do PO
-**PENDENTE.**
+## 9. Decisão do PO
+**HOMOLOGADO COM RESSALVA — 2026-10-23.**
 
-Opções esperadas:
-- `HOMOLOGADO`
-- `HOMOLOGADO COM RESSALVA`
-- `AJUSTES SOLICITADOS`
+Ressalva aceita:
+- dependências npm reportaram 2 vulnerabilidades (1 low, 1 high);
+- 4 install scripts foram bloqueados;
+- nenhuma correção forçada foi autorizada.
+
+A homologação **não autoriza merge automaticamente**. O PR #2 permanece aberto até autorização explícita de integração.
