@@ -1,8 +1,12 @@
 <Solution>
+  <Folder Name="/src/" />
   <Folder Name="/src/backend/">
     <Project Path="src/backend/PulseOps.Domain/PulseOps.Domain.csproj" />
     <Project Path="src/backend/PulseOps.Application/PulseOps.Application.csproj" />
     <Project Path="src/backend/PulseOps.Infrastructure/PulseOps.Infrastructure.csproj" />
     <Project Path="src/backend/PulseOps.Api/PulseOps.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PulseOps.Domain.Tests/PulseOps.Domain.Tests.csproj" />
   </Folder>
 </Solution>
