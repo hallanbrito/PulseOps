@@ -44,7 +44,33 @@
 │   │       └── PulseOps.Infrastructure.csproj
 │   └── frontend/
 │       └── pulseops-web/
-│           └── README.md
+│           ├── .vscode/
+│           │   ├── extensions.json
+│           │   ├── launch.json
+│           │   └── tasks.json
+│           ├── public/
+│           │   └── favicon.ico
+│           ├── src/
+│           │   ├── app/
+│           │   │   ├── app.config.ts
+│           │   │   ├── app.html
+│           │   │   ├── app.routes.ts
+│           │   │   ├── app.scss
+│           │   │   ├── app.spec.ts
+│           │   │   └── app.ts
+│           │   ├── index.html
+│           │   ├── main.ts
+│           │   └── styles.scss
+│           ├── .editorconfig
+│           ├── .gitignore
+│           ├── .prettierrc
+│           ├── angular.json
+│           ├── package-lock.json
+│           ├── package.json
+│           ├── README.md
+│           ├── tsconfig.app.json
+│           ├── tsconfig.json
+│           └── tsconfig.spec.json
 ├── tests/
 │   ├── PulseOps.Domain.Tests/
 │   │   ├── PulseOps.Domain.Tests.csproj
