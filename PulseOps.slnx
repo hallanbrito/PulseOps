@@ -8,5 +8,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PulseOps.Domain.Tests/PulseOps.Domain.Tests.csproj" />
+    <Project Path="tests/PulseOps.Infrastructure.Tests/PulseOps.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>
