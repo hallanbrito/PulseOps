@@ -1,9 +1,20 @@
+using Microsoft.EntityFrameworkCore;
 using PulseOps.Application.Monitors;
 using PulseOps.Infrastructure.Monitors;
+using PulseOps.Infrastructure.Persistence;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IMonitorRepository, InMemoryMonitorRepository>();
+var connectionString =
+    builder.Configuration.GetConnectionString("PulseOps")
+    ?? throw new InvalidOperationException(
+        "Connection string 'PulseOps' was not configured.");
+
+builder.Services.AddDbContext<PulseOpsDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddScoped<IMonitorRepository, PostgresMonitorRepository>();
 builder.Services.AddScoped<MonitorService>();
 
 builder.Services.AddCors(options =>
