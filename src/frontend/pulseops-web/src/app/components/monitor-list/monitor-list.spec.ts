@@ -87,12 +87,12 @@ describe('MonitorList', () => {
     expect(compiled.textContent).toContain('API Pagamentos');
     expect(compiled.textContent).toContain('https://pay.example.com/health');
     expect(compiled.textContent).toContain('60s');
-    expect(compiled.textContent).toContain('Ativo');
+    expect(compiled.textContent).toContain('Habilitado');
 
     expect(compiled.textContent).toContain('Auth Service');
     expect(compiled.textContent).toContain('https://auth.example.com/ping');
     expect(compiled.textContent).toContain('30s');
-    expect(compiled.textContent).toContain('Inativo');
+    expect(compiled.textContent).toContain('Desabilitado');
   });
 
   it('deve exibir mensagem de erro e botão de retry quando a chamada à API falhar', () => {

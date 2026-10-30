@@ -30,9 +30,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "styles": ["src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -65,7 +63,8 @@
               "buildTarget": "pulseops-web:build:production"
             },
             "development": {
-              "buildTarget": "pulseops-web:build:development"
+              "buildTarget": "pulseops-web:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

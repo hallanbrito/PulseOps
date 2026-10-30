@@ -12,6 +12,7 @@ export class MonitorService {
   private readonly baseUrl = inject(API_BASE_URL);
 
   getMonitors(): Observable<ServiceMonitor[]> {
-    return this.http.get<ServiceMonitor[]>(`${this.baseUrl}/api/monitors`);
+    const endpoint = this.baseUrl ? `${this.baseUrl}/api/monitors` : '/api/monitors';
+    return this.http.get<ServiceMonitor[]>(endpoint);
   }
 }

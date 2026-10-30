@@ -10,92 +10,157 @@ describe('MonitorService', () => {
   let httpTesting: HttpTestingController;
   const testBaseUrl = 'http://localhost:5000';
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: API_BASE_URL, useValue: testBaseUrl },
-      ],
+  const mockMonitors: ServiceMonitor[] = [
+    {
+      id: '11111111-1111-1111-1111-111111111111',
+      name: 'API Principal',
+      url: 'https://api.example.com/health',
+      intervalSeconds: 60,
+      enabled: true,
+      createdAtUtc: '2026-10-30T10:00:00Z',
+    },
+    {
+      id: '22222222-2222-2222-2222-222222222222',
+      name: 'Portal Web',
+      url: 'https://web.example.com',
+      intervalSeconds: 120,
+      enabled: false,
+      createdAtUtc: '2026-10-30T10:05:00Z',
+    },
+  ];
+
+  describe('com baseUrl explicitamente fornecida via DI', () => {
+    beforeEach(() => {
+      TestBed.configureTestingModule({
+        providers: [
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          { provide: API_BASE_URL, useValue: testBaseUrl },
+        ],
+      });
+
+      service = TestBed.inject(MonitorService);
+      httpTesting = TestBed.inject(HttpTestingController);
     });
 
-    service = TestBed.inject(MonitorService);
-    httpTesting = TestBed.inject(HttpTestingController);
-  });
-
-  afterEach(() => {
-    httpTesting.verify();
-  });
-
-  it('deve ser instanciado corretamente', () => {
-    expect(service).toBeTruthy();
-  });
-
-  it('deve requisitar GET /api/monitors e retornar lista de monitores', () => {
-    const mockMonitors: ServiceMonitor[] = [
-      {
-        id: '11111111-1111-1111-1111-111111111111',
-        name: 'API Principal',
-        url: 'https://api.example.com/health',
-        intervalSeconds: 60,
-        enabled: true,
-        createdAtUtc: '2026-10-30T10:00:00Z',
-      },
-      {
-        id: '22222222-2222-2222-2222-222222222222',
-        name: 'Portal Web',
-        url: 'https://web.example.com',
-        intervalSeconds: 120,
-        enabled: false,
-        createdAtUtc: '2026-10-30T10:05:00Z',
-      },
-    ];
-
-    let result: ServiceMonitor[] | undefined;
-    service.getMonitors().subscribe((data) => {
-      result = data;
+    afterEach(() => {
+      httpTesting.verify();
     });
 
-    const req = httpTesting.expectOne(`${testBaseUrl}/api/monitors`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockMonitors);
+    it('deve ser instanciado corretamente', () => {
+      expect(service).toBeTruthy();
+    });
 
-    expect(result).toEqual(mockMonitors);
-    expect(result?.length).toBe(2);
+    it('deve requisitar GET {baseUrl}/api/monitors e retornar lista de monitores', () => {
+      let result: ServiceMonitor[] | undefined;
+      service.getMonitors().subscribe((data) => {
+        result = data;
+      });
+
+      const req = httpTesting.expectOne(`${testBaseUrl}/api/monitors`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockMonitors);
+
+      expect(result).toEqual(mockMonitors);
+      expect(result?.length).toBe(2);
+    });
+
+    it('deve retornar lista vazia quando a API responder com array vazio', () => {
+      let result: ServiceMonitor[] | undefined;
+      service.getMonitors().subscribe((data) => {
+        result = data;
+      });
+
+      const req = httpTesting.expectOne(`${testBaseUrl}/api/monitors`);
+      expect(req.request.method).toBe('GET');
+      req.flush([]);
+
+      expect(result).toEqual([]);
+    });
+
+    it('deve propagar erro quando a chamada HTTP falhar', () => {
+      let errorResponse: any;
+      service.getMonitors().subscribe({
+        next: () => {
+          throw new Error('Não deveria ter sucedido');
+        },
+        error: (err) => {
+          errorResponse = err;
+        },
+      });
+
+      const req = httpTesting.expectOne(`${testBaseUrl}/api/monitors`);
+      expect(req.request.method).toBe('GET');
+      req.flush('Falha interna no servidor', {
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      expect(errorResponse).toBeTruthy();
+      expect(errorResponse.status).toBe(500);
+    });
   });
 
-  it('deve retornar lista vazia quando a API responder com array vazio', () => {
-    let result: ServiceMonitor[] | undefined;
-    service.getMonitors().subscribe((data) => {
-      result = data;
+  describe('com configuração padrão (proxy relativo)', () => {
+    beforeEach(() => {
+      delete (window as any).__PULSEOPS_API_URL__;
+
+      TestBed.configureTestingModule({
+        providers: [provideHttpClient(), provideHttpClientTesting()],
+      });
+
+      service = TestBed.inject(MonitorService);
+      httpTesting = TestBed.inject(HttpTestingController);
     });
 
-    const req = httpTesting.expectOne(`${testBaseUrl}/api/monitors`);
-    expect(req.request.method).toBe('GET');
-    req.flush([]);
+    afterEach(() => {
+      httpTesting.verify();
+    });
 
-    expect(result).toEqual([]);
+    it('deve requisitar caminho relativo /api/monitors quando baseUrl for vazia', () => {
+      let result: ServiceMonitor[] | undefined;
+      service.getMonitors().subscribe((data) => {
+        result = data;
+      });
+
+      const req = httpTesting.expectOne('/api/monitors');
+      expect(req.request.method).toBe('GET');
+      req.flush(mockMonitors);
+
+      expect(result).toEqual(mockMonitors);
+    });
   });
 
-  it('deve propagar erro quando a chamada HTTP falhar', () => {
-    let errorResponse: any;
-    service.getMonitors().subscribe({
-      next: () => {
-        throw new Error('Não deveria ter sucedido');
-      },
-      error: (err) => {
-        errorResponse = err;
-      },
+  describe('com override dinâmico via window.__PULSEOPS_API_URL__', () => {
+    const customDynamicUrl = 'http://127.0.0.1:5001';
+
+    beforeEach(() => {
+      (window as any).__PULSEOPS_API_URL__ = `${customDynamicUrl}/`;
+
+      TestBed.configureTestingModule({
+        providers: [provideHttpClient(), provideHttpClientTesting()],
+      });
+
+      service = TestBed.inject(MonitorService);
+      httpTesting = TestBed.inject(HttpTestingController);
     });
 
-    const req = httpTesting.expectOne(`${testBaseUrl}/api/monitors`);
-    expect(req.request.method).toBe('GET');
-    req.flush('Falha interna no servidor', {
-      status: 500,
-      statusText: 'Internal Server Error',
+    afterEach(() => {
+      delete (window as any).__PULSEOPS_API_URL__;
+      httpTesting.verify();
     });
 
-    expect(errorResponse).toBeTruthy();
-    expect(errorResponse.status).toBe(500);
+    it('deve respeitar override de runtime no browser sem barras extras', () => {
+      let result: ServiceMonitor[] | undefined;
+      service.getMonitors().subscribe((data) => {
+        result = data;
+      });
+
+      const req = httpTesting.expectOne(`${customDynamicUrl}/api/monitors`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockMonitors);
+
+      expect(result).toEqual(mockMonitors);
+    });
   });
 });
