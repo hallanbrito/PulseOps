@@ -31,6 +31,8 @@ describe('MonitorService', () => {
 
   describe('com baseUrl explicitamente fornecida via DI', () => {
     beforeEach(() => {
+      delete (window as any).__PULSEOPS_API_URL__;
+
       TestBed.configureTestingModule({
         providers: [
           provideHttpClient(),
@@ -44,6 +46,7 @@ describe('MonitorService', () => {
     });
 
     afterEach(() => {
+      delete (window as any).__PULSEOPS_API_URL__;
       httpTesting.verify();
     });
 
@@ -114,6 +117,7 @@ describe('MonitorService', () => {
     });
 
     afterEach(() => {
+      delete (window as any).__PULSEOPS_API_URL__;
       httpTesting.verify();
     });
 
@@ -131,11 +135,9 @@ describe('MonitorService', () => {
     });
   });
 
-  describe('com override dinâmico via window.__PULSEOPS_API_URL__', () => {
-    const customDynamicUrl = 'http://127.0.0.1:5001';
-
+  describe('com override dinâmico em runtime via window.__PULSEOPS_API_URL__ (R2-01)', () => {
     beforeEach(() => {
-      (window as any).__PULSEOPS_API_URL__ = `${customDynamicUrl}/`;
+      delete (window as any).__PULSEOPS_API_URL__;
 
       TestBed.configureTestingModule({
         providers: [provideHttpClient(), provideHttpClientTesting()],
@@ -150,17 +152,27 @@ describe('MonitorService', () => {
       httpTesting.verify();
     });
 
-    it('deve respeitar override de runtime no browser sem barras extras', () => {
-      let result: ServiceMonitor[] | undefined;
-      service.getMonitors().subscribe((data) => {
-        result = data;
-      });
+    it('deve refletir alteração em window.__PULSEOPS_API_URL__ mesmo após a inicialização do serviço', () => {
+      // 1. Primeira chamada antes do override: deve usar caminho relativo do proxy
+      service.getMonitors().subscribe();
+      const firstReq = httpTesting.expectOne('/api/monitors');
+      firstReq.flush(mockMonitors);
 
-      const req = httpTesting.expectOne(`${customDynamicUrl}/api/monitors`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockMonitors);
+      // 2. Modificação feita em runtime pelo desenvolvedor (ex.: console DevTools)
+      (window as any).__PULSEOPS_API_URL__ = 'http://127.0.0.1:5001/';
 
-      expect(result).toEqual(mockMonitors);
+      // 3. Segunda chamada: deve usar imediatamente o novo endereço sem barras extras
+      service.getMonitors().subscribe();
+      const secondReq = httpTesting.expectOne('http://127.0.0.1:5001/api/monitors');
+      secondReq.flush(mockMonitors);
+
+      // 4. Remoção do override: deve retornar ao caminho relativo do proxy
+      delete (window as any).__PULSEOPS_API_URL__;
+
+      // 5. Terceira chamada: deve retornar ao caminho relativo
+      service.getMonitors().subscribe();
+      const thirdReq = httpTesting.expectOne('/api/monitors');
+      thirdReq.flush(mockMonitors);
     });
   });
 });

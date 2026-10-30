@@ -1,18 +1,19 @@
-# RUC/1.0 — PulseOps — Fatia W2 (Tentativa 2 — Correções CH-AUD-W2)
+# RUC/1.0 — PulseOps — Fatia W2 (Tentativa 3 — Correções CH-AUD-W2-R2)
 
-> Relatório Universal C.H. em conformidade com o protocolo CHDevFlow. Registra as evidências verificáveis da implementação técnica e da rodada de correções da auditoria da Fatia W2. Não constitui homologação de PO nem autorização de merge.
+> Relatório Universal C.H. em conformidade com o protocolo CHDevFlow. Registra as evidências verificáveis da implementação técnica e das rodadas de correção da auditoria da Fatia W2. Não constitui homologação de PO nem autorização de merge.
 
 **Cabeçalho:**
 - **Missão / Issue:** [#5](https://github.com/hallanbrito/PulseOps/issues/5) — W2: Tela Angular de monitores integrada à API (CH-2)
 - **Draft PR:** [#6](https://github.com/hallanbrito/PulseOps/pull/6) — W2: Tela Angular de monitores integrada à API (CH-2)
-- **Auditoria de referência:** [CH-AUD-W2 (comentário em PR #6)](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6523536845)
+- **Auditoria R1:** [CH-AUD-W2 (comentário em PR #6)](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6523536845)
+- **Auditoria R2 de referência:** [CH-AUD-W2-R2 (comentário em PR #6)](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6524817410)
 - **Executor declarado:** AGY / Antigravity (Gemini 3.8 Flash)
 - **Coordenação e auditoria documental:** ChatGPT
 - **Product Owner (PO):** Hallan de Sousa Brito
 - **Nível CH autorizado:** CH-2 restrito à branch isolada
 - **Ambiente de execução:** Linux (CachyOS x86_64); .NET SDK 10.0.113; Node.js v24.22.1; npm 12.2.1; Angular 22.2.4; Vitest 5.0.5
 - **Fonte de verdade:** LIVE_GITHUB (Issue #5, PR #6, origin/main) + LOCAL_REPO
-- **Timestamp:** 2026-10-30T14:02:00Z
+- **Timestamp:** 2026-10-30T14:24:00Z
 - **Baseline SHA:** `701ecd175b157987e077b2a4ad419fd405acceff`
 - **Branch de trabalho:** `agy/w2-angular-monitores`
 - **Resultado técnico:** APROVADO_TECNICAMENTE (Draft PR pronto para reavaliação independente do ChatGPT)
@@ -35,10 +36,10 @@
 
 ## 2. Resumo executivo
 
-Implementação da tela Angular de monitores integrada à API REST de leitura do PulseOps (`GET /api/monitors`), com aplicação das correções solicitadas na auditoria **CH-AUD-W2**:
-1. **AUD-01 (Configuração da API):** Configurado proxy de desenvolvimento (`proxy.conf.json`) integrado ao `angular.json` e suporte a override em runtime via `window.__PULSEOPS_API_URL__`, permitindo alternar o alvo da API sem alteração de código-fonte.
-2. **AUD-02 (Semântica de estado):** Rótulos do campo `enabled` alterados de "Ativo / Inativo" para "Habilitado / Desabilitado", evitando falsa interpretação de disponibilidade/saúde do serviço antes da existência do Worker.
-3. **AUD-03 (Precisão documental e validação):** Inventário corrigido para refletir exatamente os 20 arquivos alterados no diff do PR, classificação rigorosa dos testes locais como declaração do agente (ausência de CI remota no repositório) e documentação de procedimento passo a passo para smoke test manual contra a API e PostgreSQL reais.
+Implementação da tela Angular de monitores integrada à API REST de leitura do PulseOps (`GET /api/monitors`), com atendimento integral aos apontamentos da auditoria independente **CH-AUD-W2-R2**:
+1. **R2-01 (Override em runtime dinâmico):** `MonitorService.getBaseUrl()` agora é avaliado a cada requisição (`getMonitors()`), permitindo que atribuições em `window.__PULSEOPS_API_URL__` feitas no console DevTools a qualquer momento após a inicialização passem a valer imediatamente no próximo clique de "Atualizar". Teste unitário específico incluído para comprovar o ciclo de vida dinâmico.
+2. **R2-02 (Roteiro manual reproduzível em ambiente limpo e harmonização):** O target do proxy em `proxy.conf.json` foi harmonizado para `http://127.0.0.1:5000`, alinhando-se com o bind da API e evitando divergência de resolução IPv4/IPv6 em `localhost`. O guia de smoke test manual foi reescrito contemplando explicitamente a criação de `.env` a partir de `.env.example`, configuração de `ConnectionStrings:PulseOps` via `dotnet user-secrets`, restauração de ferramentas locais com `dotnet tool restore` (`dotnet-ef`), execução de migrations e teste completo via proxy.
+3. **R2-03 (Metadados e acabamento):** Correção de referências de HEAD SHA, correção de numeração no inventário documental (item 13 para `app.routes.ts`) e proteção contra overflow horizontal no grid CSS em viewports de 320px com `minmax(min(100%, 280px), 1fr)`.
 
 Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% de sucesso. Custo adicional R$ 0,00. Nenhum merge, deploy ou escrita direta na branch `main`.
 
@@ -48,14 +49,14 @@ Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% 
 
 | ID | Ação | Escopo / Resultado |
 |---|---|---|
-| A01 | Inspeção da auditoria CH-AUD-W2 | Mapeadas correções AUD-01 (proxy/config), AUD-02 (rótulos Habilitado/Desabilitado) e AUD-03 (inventário documental e separação de CI). |
-| A02 | Configuração de proxy no Angular CLI | Criado `proxy.conf.json` apontando `/api` para `http://localhost:5000` e registrado em `angular.json` sob a configuração de desenvolvimento do `serve`. |
-| A03 | Suporte a override de API sem alteração de código | Atualizado `API_BASE_URL` para retornar caminho relativo por padrão (usando proxy) ou valor definido via `window.__PULSEOPS_API_URL__` em runtime. |
-| A04 | Correção semântica dos crachás de estado | Atualizados template `monitor-list.html` e testes `monitor-list.spec.ts` para exibir `Habilitado / Desabilitado` com atributo `title` explicativo. |
-| A05 | Ampliação da suíte de testes do serviço | Adicionados testes unitários em `monitor.service.spec.ts` validando caminho relativo com proxy e override dinâmico via `window.__PULSEOPS_API_URL__` (totalizando 6 testes no serviço). |
-| A06 | Execução e validação de suítes de teste | Validados 14 testes no frontend (Vitest) e 2 testes no backend (xUnit com Testcontainers). |
-| A07 | Verificação de build e estilo | `npm run build` gerou bundle em 4.3s sem erros ou warnings de orçamento; `prettier` e `git diff --check` validados. |
-| A08 | Atualização documental do RUC | Registro detalhado do inventário de arquivos, distinção entre testes locais e CI remota, e guia de smoke test manual. |
+| A01 | Inspeção da auditoria CH-AUD-W2-R2 | Identificadas correções R2-01 (avaliação dinâmica de runtime override), R2-02 (guia manual completo e bind 127.0.0.1) e R2-03 (acabamentos de SHA, CSS e numeração). |
+| A02 | Refatoração de `MonitorService.getBaseUrl()` (R2-01) | Extração do cálculo dinâmico da URL base avaliado no momento de cada chamada `getMonitors()`, priorizando `window.__PULSEOPS_API_URL__` se definido no browser, seguido de DI e proxy relativo por padrão. |
+| A03 | Teste do ciclo de vida de override dinâmico (R2-01) | Suíte `monitor.service.spec.ts` atualizada para verificar chamada inicial relativa, injeção de `window.__PULSEOPS_API_URL__` pós-inicialização com validação da URL customizada e remoção do override retornando ao proxy. |
+| A04 | Harmonização de rede 127.0.0.1 (R2-02) | `proxy.conf.json` atualizado com `"target": "http://127.0.0.1:5000"`, alinhado ao bind documentado da API ASP.NET Core (`http://127.0.0.1:5000`). |
+| A05 | Ajuste de responsividade CSS (R2-03) | `.monitors-grid` atualizado para `minmax(min(100%, 280px), 1fr)` e `.monitor-card` com `min-width: 0`, eliminando qualquer risco de overflow horizontal em telas móveis estreitas (320px). |
+| A06 | Validação de suítes de teste e compilação | Executados `npm test -- --watch=false` (14/14 aprovados), `npm run build` (bundle de 249.44 kB sem warnings de budget) e `dotnet test PulseOps.slnx` (2/2 aprovados). |
+| A07 | Verificação de estilo | `prettier --check` e `git diff --check` aprovados sem inconformidades. |
+| A08 | Atualização documental completa (R2-02 e R2-03) | RUC/1.0 atualizado com roteiro completo de setup limpo e correção das referências. |
 
 ---
 
@@ -66,8 +67,8 @@ Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% 
 | E01 | OBSERVADO | `git rev-parse origin/main` | Baseline confirmada em `701ecd175b157987e077b2a4ad419fd405acceff`. |
 | E02 | DECLARADO PELO AGY | Execução local CachyOS (`dotnet test PulseOps.slnx`) | 2 testes xUnit aprovados (`PulseOps.Domain.Tests` e `PulseOps.Infrastructure.Tests` com Testcontainers). |
 | E03 | DECLARADO PELO AGY | Execução local CachyOS (`npm ci`) | Instalação concluída com sucesso em 8s. Mantida ressalva aceita da W0/W1 (2 vulnerabilidades em devDependencies e 4 install scripts bloqueados; nenhum `--force`). |
-| E04 | DECLARADO PELO AGY | Execução local CachyOS (`npm test -- --watch=false`) | 3 arquivos de teste, 14 testes executados e aprovados (100% PASS) em 4.5s via Vitest. |
-| E05 | DECLARADO PELO AGY | Execução local CachyOS (`npm run build`) | Build de produção gerado com sucesso em 4.3s; total inicial de 249.19 kB (68.95 kB transfer). 0 warnings de orçamento. |
+| E04 | DECLARADO PELO AGY | Execução local CachyOS (`npm test -- --watch=false`) | 3 arquivos de teste, 14 testes executados e aprovados (100% PASS) em 5.8s via Vitest. |
+| E05 | DECLARADO PELO AGY | Execução local CachyOS (`npm run build`) | Build de produção gerado com sucesso em 4.5s; total inicial de 249.44 kB (69.11 kB transfer). 0 warnings de orçamento. |
 | E06 | DECLARADO PELO AGY | Execução local CachyOS (`npx prettier --check`) | Todos os arquivos TypeScript, HTML, SCSS e JSON validados conforme regras de formatação. |
 | E07 | DECLARADO PELO AGY | Execução local CachyOS (`git diff --check`) | Nenhuma inconformidade de whitespace ou caracteres indesejados no diff. |
 | E08 | OBSERVADO | `gh pr checks 6` | `no checks reported`: O repositório PulseOps **NÃO possui CI remota (GitHub Actions)** configurada nesta branch. Testes foram executados estritamente no ambiente local do agente. |
@@ -84,8 +85,8 @@ Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% 
 | T01 | Frontend não exibe scaffold Angular | PASSOU | `app.html` e `app.spec.ts` substituídos por layout shell e marca PulseOps. |
 | T02 | Tela apresenta monitores reais da API | PASSOU | `MonitorList` consome `GET /api/monitors` e renderiza campos do modelo C#. |
 | T03 | Estados explícitos (loading, empty, error, retry, success) | PASSOU | Implementados com signals e testados individualmente em `monitor-list.spec.ts`. |
-| T04 | Semântica de estado (AUD-02) | PASSOU | Rótulo corrigido para `Habilitado / Desabilitado`, sem sugerir disponibilidade de rede. |
-| T05 | Configuração de API em dev sem alterar código (AUD-01) | PASSOU | `proxy.conf.json` configurado no `angular.json` + fallback `window.__PULSEOPS_API_URL__` testado. |
+| T04 | Semântica de estado (AUD-02) | PASSOU | Rótulo configurado como `Habilitado / Desabilitado`, sem sugerir disponibilidade de rede. |
+| T05 | Configuração de API via proxy e override dinâmico (AUD-01 / R2-01) | PASSOU | `proxy.conf.json` (127.0.0.1:5000) + override avaliado dinamicamente a cada requisição. |
 | T06 | Testes automatizados do frontend | PASSOU | 14/14 testes unitários aprovados via Vitest (`npm test -- --watch=false`). |
 | T07 | Regressão de testes do backend | PASSOU | 2/2 testes xUnit aprovados via `dotnet test`. |
 | T08 | Build de produção do frontend | PASSOU | `npm run build` executado com 0 erros e 0 avisos. |
@@ -108,20 +109,20 @@ Total de arquivos impactados em relação a `origin/main`: **20 arquivos** (10 m
 
 - **Novos arquivos (10):**
   1. `docs/CH/RUC-W2.md` — Relatório Universal C.H. versão 1.0.
-  2. `src/frontend/pulseops-web/proxy.conf.json` — Configuração de proxy de desenvolvimento para `/api`.
+  2. `src/frontend/pulseops-web/proxy.conf.json` — Configuração de proxy de desenvolvimento para `/api` apontando para `http://127.0.0.1:5000`.
   3. `src/frontend/pulseops-web/src/app/models/monitor.model.ts` — Interface `ServiceMonitor`.
-  4. `src/frontend/pulseops-web/src/app/config/api.config.ts` — Injection token `API_BASE_URL` com proxy e runtime override.
-  5. `src/frontend/pulseops-web/src/app/services/monitor.service.ts` — Serviço de consulta REST tipado.
-  6. `src/frontend/pulseops-web/src/app/services/monitor.service.spec.ts` — 6 testes unitários do serviço.
+  4. `src/frontend/pulseops-web/src/app/config/api.config.ts` — Injection token `API_BASE_URL`.
+  5. `src/frontend/pulseops-web/src/app/services/monitor.service.ts` — Serviço de consulta REST com avaliação dinâmica de base URL.
+  6. `src/frontend/pulseops-web/src/app/services/monitor.service.spec.ts` — 6 testes unitários do serviço cobrindo proxy, DI e ciclo de vida dinâmico de override.
   7. `src/frontend/pulseops-web/src/app/components/monitor-list/monitor-list.ts` — Componente standalone `MonitorList`.
-  8. `src/frontend/pulseops-web/src/app/components/monitor-list/monitor-list.html` — Template com 4 estados e rótulo Habilitado/Desabilitado.
-  9. `src/frontend/pulseops-web/src/app/components/monitor-list/monitor-list.scss` — Estilos responsivos do componente.
+  8. `src/frontend/pulseops-web/src/app/components/monitor-list/monitor-list.html` — Template com 4 estados e crachás `Habilitado / Desabilitado`.
+  9. `src/frontend/pulseops-web/src/app/components/monitor-list/monitor-list.scss` — Estilos responsivos com proteção contra overflow (`minmax(min(100%, 280px), 1fr)`).
   10. `src/frontend/pulseops-web/src/app/components/monitor-list/monitor-list.spec.ts` — 6 testes unitários do componente.
 
 - **Arquivos modificados (10):**
   11. `src/frontend/pulseops-web/angular.json` — Adicionada configuração `"proxyConfig": "proxy.conf.json"` no serve de desenvolvimento.
   12. `src/frontend/pulseops-web/src/app/app.config.ts` — Adicionado provider `provideHttpClient()`.
-  3. `src/frontend/pulseops-web/src/app/app.routes.ts` — Configurada rota padrão direcionando para `MonitorList`.
+  13. `src/frontend/pulseops-web/src/app/app.routes.ts` — Configurada rota padrão direcionando para `MonitorList`.
   14. `src/frontend/pulseops-web/src/app/app.ts` — Atualizado componente raiz.
   15. `src/frontend/pulseops-web/src/app/app.html` — Removido scaffold padrão e adicionado shell da aplicação.
   16. `src/frontend/pulseops-web/src/app/app.scss` — Estilos de layout e barra de navegação.
@@ -132,69 +133,105 @@ Total de arquivos impactados em relação a `origin/main`: **20 arquivos** (10 m
 
 ---
 
-## 8. Procedimento de validação manual (Smoke Test com API e PostgreSQL reais)
+## 8. Procedimento de validação manual (Smoke Test com API e PostgreSQL reais em clone limpo)
 
 > **Aviso de integridade:** Este procedimento destina-se à validação humana e auditoria independente. A execução ponta-a-ponta contra banco PostgreSQL de longa duração NÃO foi realizada na sessão automatizada do agente (onde apenas os testes xUnit com Testcontainers efêmero foram executados).
 
 ### Pré-requisitos
-- Docker instalado e ativo.
-- .NET SDK 10 instalado.
+- Docker e Docker Compose instalados e em execução.
+- .NET SDK 10 instalado (`dotnet --version` >= 10.0.100).
 - Node.js (v24+) e npm instalados.
 
-### Passo 1 — Subir o banco PostgreSQL
+### Passo 1 — Configurar variáveis de ambiente do PostgreSQL
+O arquivo `compose.yaml` requer as variáveis `POSTGRES_DB`, `POSTGRES_USER` e `POSTGRES_PASSWORD` no arquivo `.env`. Copie o template da W1:
+```bash
+cp .env.example .env
+```
+O `.env.example` já fornece valores padrão para desenvolvimento local (`POSTGRES_DB=pulseops`, `POSTGRES_USER=pulseops`, `POSTGRES_PASSWORD=pulseops`).
+
+### Passo 2 — Subir o banco PostgreSQL via Docker
 ```bash
 docker compose up -d
 docker compose ps
 ```
-Verifique se o serviço `pulseops-postgres` reporta status `healthy`.
+Aguarde até que o contêiner `pulseops-postgres` apresente status `healthy` (porta `5432:5432`).
 
-### Passo 2 — Aplicar migrations do banco de dados
+### Passo 3 — Configurar a connection string na API via .NET User Secrets
+Conforme a governança da W1, a connection string local não é salva no `appsettings.json` nem versionada no Git:
+```bash
+dotnet user-secrets set "ConnectionStrings:PulseOps" "Host=127.0.0.1;Port=5432;Database=pulseops;Username=pulseops;Password=pulseops" --project src/backend/PulseOps.Api
+```
+
+### Passo 4 — Restaurar ferramentas locais do .NET (dotnet-ef)
+O projeto possui manifesto de ferramentas locais em `dotnet-tools.json` (instalado na W1):
+```bash
+dotnet tool restore
+```
+Isso garante a disponibilidade do comando `dotnet tool run dotnet-ef`.
+
+### Passo 5 — Aplicar migrations do EF Core no banco PostgreSQL
 ```bash
 dotnet tool run dotnet-ef database update \
   --project src/backend/PulseOps.Infrastructure \
   --startup-project src/backend/PulseOps.Api
 ```
+Verifique a saída indicando que as tabelas de monitores foram criadas no PostgreSQL.
 
-### Passo 3 — Iniciar a API ASP.NET Core
+### Passo 6 — Iniciar a API ASP.NET Core
 ```bash
 ASPNETCORE_ENVIRONMENT=Development dotnet run \
   --project src/backend/PulseOps.Api \
   --urls http://127.0.0.1:5000
 ```
-Confirme que `http://127.0.0.1:5000/health` responde HTTP 200 com `{"status":"ok"}`.
+Confirme que a API está ativa em outro terminal:
+```bash
+curl -s http://127.0.0.1:5000/health
+```
+Resposta esperada: `{"status":"ok","service":"PulseOps.Api",...}`.
 
-### Passo 4 — Opcional: Criar um monitor de teste via API
+### Passo 7 — Criar um monitor de teste via API
 ```bash
 curl -X POST http://127.0.0.1:5000/api/monitors \
   -H "Content-Type: application/json" \
-  -d '{"name": "Serviço de Teste", "url": "https://httpbin.org/status/200", "intervalSeconds": 60}'
+  -d '{"name": "API Exemplo", "url": "https://httpbin.org/status/200", "intervalSeconds": 60}'
 ```
+Resposta esperada: HTTP 201 Created com JSON contendo o `id` gerado.
 
-### Passo 5 — Iniciar o frontend Angular com proxy
-Em outro terminal:
+### Passo 8 — Iniciar o frontend Angular com proxy
+Em um novo terminal:
 ```bash
 cd src/frontend/pulseops-web
 npm start
 ```
-O servidor de desenvolvimento Angular iniciará em `http://localhost:4200`, encaminhando requisições para `/api` automaticamente para `http://localhost:5000`.
+O servidor Angular iniciará em `http://localhost:4200` com o arquivo `proxy.conf.json` configurado, encaminhando `/api` diretamente para `http://127.0.0.1:5000`.
 
-### Passo 6 — Validações visuais no navegador
-Abra `http://localhost:4200`:
-1. **Estado Success:** O monitor cadastrado deve ser listado com nome, URL clicável, intervalo e crachá **Habilitado**.
-2. **Alternar alvo da API sem alterar código:**
-   - Para apontar para outra porta/endereço, basta alterar `"target": "http://outro-host:porta"` em `proxy.conf.json` e reiniciar `npm start`.
-   - Alternativamente, sem reiniciar nada, abra o console do DevTools (F12) e execute:
+### Passo 9 — Validações visuais no navegador
+Abra `http://localhost:4200` no navegador:
+1. **Estado Success:** O monitor "API Exemplo" será exibido no grid responsivo com crachá **Habilitado** (verde), URL e intervalo `60s`.
+2. **Override dinâmico em runtime (R2-01):**
+   - Abra as Ferramentas de Desenvolvedor (F12) e vá para a aba **Console**.
+   - Defina um alvo alternativo em tempo de execução:
      ```javascript
      window.__PULSEOPS_API_URL__ = 'http://127.0.0.1:5001';
      ```
-     Em seguida, clique no botão "Atualizar" na tela.
-3. **Estado Error e Retry:** Interrompa a API (Ctrl+C no terminal da API) e clique no botão "Atualizar" no navegador. A tela exibirá a mensagem de erro de comunicação e o botão "Tentar novamente". Ao religar a API e clicar em "Tentar novamente", a lista será restabelecida.
+   - Sem recarregar a página, clique no botão **"Atualizar"** no cabeçalho da interface.
+   - Na aba **Network**, observe que a requisição é disparada imediatamente para `http://127.0.0.1:5001/api/monitors`.
+   - Para retornar ao proxy padrão, execute no console:
+     ```javascript
+     delete window.__PULSEOPS_API_URL__;
+     ```
+   - Clique novamente em **"Atualizar"**; a requisição voltará a ser enviada para `/api/monitors` através do proxy local.
+3. **Estado Error e Retry:**
+   - Interrompa a API no terminal correspondente (Ctrl+C).
+   - Clique no botão **"Atualizar"** na interface web.
+   - A tela exibirá o estado de erro amigável com mensagem descritiva e o botão **"Tentar novamente"**.
+   - Reinicie a API (`dotnet run`) e clique em **"Tentar novamente"**; a listagem se restabelecerá com sucesso.
 
 ---
 
 ## 9. Recomendação técnica
 
-**APROVADO_TECNICAMENTE** — Todas as solicitações da auditoria CH-AUD-W2 (AUD-01, AUD-02 e AUD-03) foram sanadas com precisão e testes automatizados correspondentes. O Draft PR #6 está atualizado e pronto para nova auditoria independente do ChatGPT.
+**APROVADO_TECNICAMENTE** — Todos os apontamentos da auditoria independente CH-AUD-W2-R2 (R2-01, R2-02 e R2-03) foram sanados com precisão, com testes automatizados dedicados e guia reproduzível. O Draft PR #6 está pronto para nova auditoria independente do ChatGPT.
 
 ---
 
