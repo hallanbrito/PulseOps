@@ -1,4 +1,4 @@
-# RUC/1.0 — PulseOps — Fatia W2 (Tentativa 3 — Correções CH-AUD-W2-R2)
+# RUC/1.0 — PulseOps — Fatia W2 (Tentativa 4 — Correções CH-AUD-W2-R3)
 
 > Relatório Universal C.H. em conformidade com o protocolo CHDevFlow. Registra as evidências verificáveis da implementação técnica e das rodadas de correção da auditoria da Fatia W2. Não constitui homologação de PO nem autorização de merge.
 
@@ -6,17 +6,18 @@
 - **Missão / Issue:** [#5](https://github.com/hallanbrito/PulseOps/issues/5) — W2: Tela Angular de monitores integrada à API (CH-2)
 - **Draft PR:** [#6](https://github.com/hallanbrito/PulseOps/pull/6) — W2: Tela Angular de monitores integrada à API (CH-2)
 - **Auditoria R1:** [CH-AUD-W2 (comentário em PR #6)](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6523536845)
-- **Auditoria R2 de referência:** [CH-AUD-W2-R2 (comentário em PR #6)](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6524817410)
+- **Auditoria R2:** [CH-AUD-W2-R2 (comentário em PR #6)](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6524817410)
+- **Auditoria R3 de referência:** [CH-AUD-W2-R3 (comentário em PR #6)](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6525271491)
 - **Executor declarado:** AGY / Antigravity (Gemini 3.8 Flash)
 - **Coordenação e auditoria documental:** ChatGPT
 - **Product Owner (PO):** Hallan de Sousa Brito
 - **Nível CH autorizado:** CH-2 restrito à branch isolada
 - **Ambiente de execução:** Linux (CachyOS x86_64); .NET SDK 10.0.113; Node.js v24.22.1; npm 12.2.1; Angular 22.2.4; Vitest 5.0.5
 - **Fonte de verdade:** LIVE_GITHUB (Issue #5, PR #6, origin/main) + LOCAL_REPO
-- **Timestamp:** 2026-10-30T14:24:00Z
+- **Timestamp:** 2026-10-30T14:34:00Z
 - **Baseline SHA:** `701ecd175b157987e077b2a4ad419fd405acceff`
 - **Branch de trabalho:** `agy/w2-angular-monitores`
-- **Resultado técnico:** APROVADO_TECNICAMENTE (Draft PR pronto para reavaliação independente do ChatGPT)
+- **Resultado técnico:** APROVADO_TECNICAMENTE (Draft PR pronto para revisão documental final do ChatGPT)
 
 ---
 
@@ -36,12 +37,12 @@
 
 ## 2. Resumo executivo
 
-Implementação da tela Angular de monitores integrada à API REST de leitura do PulseOps (`GET /api/monitors`), com atendimento integral aos apontamentos da auditoria independente **CH-AUD-W2-R2**:
-1. **R2-01 (Override em runtime dinâmico):** `MonitorService.getBaseUrl()` agora é avaliado a cada requisição (`getMonitors()`), permitindo que atribuições em `window.__PULSEOPS_API_URL__` feitas no console DevTools a qualquer momento após a inicialização passem a valer imediatamente no próximo clique de "Atualizar". Teste unitário específico incluído para comprovar o ciclo de vida dinâmico.
-2. **R2-02 (Roteiro manual reproduzível em ambiente limpo e harmonização):** O target do proxy em `proxy.conf.json` foi harmonizado para `http://127.0.0.1:5000`, alinhando-se com o bind da API e evitando divergência de resolução IPv4/IPv6 em `localhost`. O guia de smoke test manual foi reescrito contemplando explicitamente a criação de `.env` a partir de `.env.example`, configuração de `ConnectionStrings:PulseOps` via `dotnet user-secrets`, restauração de ferramentas locais com `dotnet tool restore` (`dotnet-ef`), execução de migrations e teste completo via proxy.
-3. **R2-03 (Metadados e acabamento):** Correção de referências de HEAD SHA, correção de numeração no inventário documental (item 13 para `app.routes.ts`) e proteção contra overflow horizontal no grid CSS em viewports de 320px com `minmax(min(100%, 280px), 1fr)`.
+Implementação da tela Angular de monitores integrada à API REST de leitura do PulseOps (`GET /api/monitors`), com atendimento integral aos apontamentos documentais da auditoria independente **CH-AUD-W2-R3**:
+1. **R3-01 (Compatibilidade de credenciais locais no smoke test):** O roteiro foi alinhado ao `.env.example` versionado (que contém o placeholder `POSTGRES_PASSWORD=change-me-local-only`), orientando explicitamente a definição de uma senha local no `.env` e o uso idêntico no `.NET User Secrets`, preservando a segurança sem versionar segredos.
+2. **R3-02 (Localização e restauração do dotnet-ef):** Esclarecida a localização exata do manifesto local `./dotnet-tools.json` versionado na W1 na raiz do repositório (commit `ca8acd2`), instruindo o comando reproduzível `dotnet tool restore --tool-manifest ./dotnet-tools.json` (ou `dotnet tool restore` na raiz) e informando a alternativa via ferramenta global.
+3. **R3-03 (Instalação limpa de dependências frontend):** Incluído explicitamente o passo `npm ci` no diretório `src/frontend/pulseops-web` antes do `npm start` para garantir reprodutibilidade em clones novos sem `node_modules`.
 
-Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% de sucesso. Custo adicional R$ 0,00. Nenhum merge, deploy ou escrita direta na branch `main`.
+O código funcional, os 14 testes unitários Vitest e os 2 testes xUnit backend (já aceitos tecnicamente na R2) foram preservados intactos. Custo adicional R$ 0,00. Nenhum merge, deploy ou escrita direta na branch `main`.
 
 ---
 
@@ -49,14 +50,11 @@ Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% 
 
 | ID | Ação | Escopo / Resultado |
 |---|---|---|
-| A01 | Inspeção da auditoria CH-AUD-W2-R2 | Identificadas correções R2-01 (avaliação dinâmica de runtime override), R2-02 (guia manual completo e bind 127.0.0.1) e R2-03 (acabamentos de SHA, CSS e numeração). |
-| A02 | Refatoração de `MonitorService.getBaseUrl()` (R2-01) | Extração do cálculo dinâmico da URL base avaliado no momento de cada chamada `getMonitors()`, priorizando `window.__PULSEOPS_API_URL__` se definido no browser, seguido de DI e proxy relativo por padrão. |
-| A03 | Teste do ciclo de vida de override dinâmico (R2-01) | Suíte `monitor.service.spec.ts` atualizada para verificar chamada inicial relativa, injeção de `window.__PULSEOPS_API_URL__` pós-inicialização com validação da URL customizada e remoção do override retornando ao proxy. |
-| A04 | Harmonização de rede 127.0.0.1 (R2-02) | `proxy.conf.json` atualizado com `"target": "http://127.0.0.1:5000"`, alinhado ao bind documentado da API ASP.NET Core (`http://127.0.0.1:5000`). |
-| A05 | Ajuste de responsividade CSS (R2-03) | `.monitors-grid` atualizado para `minmax(min(100%, 280px), 1fr)` e `.monitor-card` com `min-width: 0`, eliminando qualquer risco de overflow horizontal em telas móveis estreitas (320px). |
-| A06 | Validação de suítes de teste e compilação | Executados `npm test -- --watch=false` (14/14 aprovados), `npm run build` (bundle de 249.44 kB sem warnings de budget) e `dotnet test PulseOps.slnx` (2/2 aprovados). |
-| A07 | Verificação de estilo | `prettier --check` e `git diff --check` aprovados sem inconformidades. |
-| A08 | Atualização documental completa (R2-02 e R2-03) | RUC/1.0 atualizado com roteiro completo de setup limpo e correção das referências. |
+| A01 | Inspeção da auditoria CH-AUD-W2-R3 | Identificados pontos documentais R3-01 (senha no .env e user-secrets), R3-02 (manifesto local `./dotnet-tools.json`) e R3-03 (`npm ci` prévio ao `npm start`). |
+| A02 | Validação de manifesto dotnet-tools local (R3-02) | Verificado que `./dotnet-tools.json` está rastreado na raiz do repositório no Git (adicionado em `ca8acd2`), contendo `dotnet-ef 10.0.14`. Testada restauração com sucesso via `dotnet tool restore --tool-manifest ./dotnet-tools.json`. |
+| A03 | Validação de coerência das variáveis de ambiente (R3-01) | Confirmado conteúdo de `.env.example` e documentada harmonização da senha local entre `.env` e `dotnet user-secrets`. |
+| A04 | Atualização do procedimento de smoke test em clone limpo (R3-03) | Adicionado `npm ci` no fluxo de inicialização do frontend em `src/frontend/pulseops-web`. |
+| A05 | Verificação de integridade e higiene | Confirmado que testes e builds permanecem 100% aprovados, sem alterações de código-fonte de negócio. |
 
 ---
 
@@ -72,9 +70,10 @@ Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% 
 | E06 | DECLARADO PELO AGY | Execução local CachyOS (`npx prettier --check`) | Todos os arquivos TypeScript, HTML, SCSS e JSON validados conforme regras de formatação. |
 | E07 | DECLARADO PELO AGY | Execução local CachyOS (`git diff --check`) | Nenhuma inconformidade de whitespace ou caracteres indesejados no diff. |
 | E08 | OBSERVADO | `gh pr checks 6` | `no checks reported`: O repositório PulseOps **NÃO possui CI remota (GitHub Actions)** configurada nesta branch. Testes foram executados estritamente no ambiente local do agente. |
-| E09 | DECLARADO | Protocolo de execução | Custo financeiro adicional R$ 0,00; nenhuma chamada a serviços externos pagos. |
-| E10 | OBSERVADO | Código-fonte | Nenhuma credencial, segredo ou token real versionado. |
-| E11 | OBSERVADO | `git status` | Execução restrita à branch isolada `agy/w2-angular-monitores`. Árvore de trabalho íntegra. |
+| E09 | OBSERVADO | `git ls-files dotnet-tools.json` | O manifesto local de ferramentas do .NET está versionado na raiz (`./dotnet-tools.json`), originário do commit `ca8acd2`. |
+| E10 | DECLARADO | Protocolo de execução | Custo financeiro adicional R$ 0,00; nenhuma chamada a serviços externos pagos. |
+| E11 | OBSERVADO | Código-fonte | Nenhuma credencial, segredo ou token real versionado. |
+| E12 | OBSERVADO | `git status` | Execução restrita à branch isolada `agy/w2-angular-monitores`. Árvore de trabalho íntegra. |
 
 ---
 
@@ -87,10 +86,10 @@ Todos os 14 testes unitários Vitest e 2 testes xUnit backend passaram com 100% 
 | T03 | Estados explícitos (loading, empty, error, retry, success) | PASSOU | Implementados com signals e testados individualmente em `monitor-list.spec.ts`. |
 | T04 | Semântica de estado (AUD-02) | PASSOU | Rótulo configurado como `Habilitado / Desabilitado`, sem sugerir disponibilidade de rede. |
 | T05 | Configuração de API via proxy e override dinâmico (AUD-01 / R2-01) | PASSOU | `proxy.conf.json` (127.0.0.1:5000) + override avaliado dinamicamente a cada requisição. |
-| T06 | Testes automatizados do frontend | PASSOU | 14/14 testes unitários aprovados via Vitest (`npm test -- --watch=false`). |
-| T07 | Regressão de testes do backend | PASSOU | 2/2 testes xUnit aprovados via `dotnet test`. |
-| T08 | Build de produção do frontend | PASSOU | `npm run build` executado com 0 erros e 0 avisos. |
-| T09 | Conformidade de formatação | PASSOU | `prettier --check` e `git diff --check` sem erros. |
+| T06 | Coerência documental do smoke test (R3-01, R3-02, R3-03) | PASSOU | Alinhados .env/secrets, manifesto `./dotnet-tools.json` e `npm ci` prévio. |
+| T07 | Testes automatizados do frontend | PASSOU | 14/14 testes unitários aprovados via Vitest (`npm test -- --watch=false`). |
+| T08 | Regressão de testes do backend | PASSOU | 2/2 testes xUnit aprovados via `dotnet test`. |
+| T09 | Build de produção do frontend | PASSOU | `npm run build` executado com 0 erros e 0 avisos. |
 | T10 | Proteção de escopo e governança | PASSOU | R$ 0 de custo; sem deploy, merge ou alterações em backend. |
 
 ---
@@ -142,12 +141,19 @@ Total de arquivos impactados em relação a `origin/main`: **20 arquivos** (10 m
 - .NET SDK 10 instalado (`dotnet --version` >= 10.0.100).
 - Node.js (v24+) e npm instalados.
 
-### Passo 1 — Configurar variáveis de ambiente do PostgreSQL
-O arquivo `compose.yaml` requer as variáveis `POSTGRES_DB`, `POSTGRES_USER` e `POSTGRES_PASSWORD` no arquivo `.env`. Copie o template da W1:
+### Passo 1 — Configurar variáveis de ambiente do PostgreSQL (R3-01)
+O arquivo `compose.yaml` requer as variáveis `POSTGRES_DB`, `POSTGRES_USER` e `POSTGRES_PASSWORD` no arquivo `.env`.
+A partir da raiz do repositório, copie o template:
 ```bash
 cp .env.example .env
 ```
-O `.env.example` já fornece valores padrão para desenvolvimento local (`POSTGRES_DB=pulseops`, `POSTGRES_USER=pulseops`, `POSTGRES_PASSWORD=pulseops`).
+O `.env.example` versionado contém:
+```env
+POSTGRES_DB=pulseops
+POSTGRES_USER=pulseops
+POSTGRES_PASSWORD=change-me-local-only
+```
+Edite o arquivo `.env` para definir uma senha local segura para desenvolvimento (exemplo: altere `change-me-local-only` para `minha-senha-local`). **Nunca versione o `.env`.**
 
 ### Passo 2 — Subir o banco PostgreSQL via Docker
 ```bash
@@ -156,18 +162,20 @@ docker compose ps
 ```
 Aguarde até que o contêiner `pulseops-postgres` apresente status `healthy` (porta `5432:5432`).
 
-### Passo 3 — Configurar a connection string na API via .NET User Secrets
-Conforme a governança da W1, a connection string local não é salva no `appsettings.json` nem versionada no Git:
+### Passo 3 — Configurar a connection string na API via .NET User Secrets (R3-01)
+Conforme a governança da W1, a connection string local não é salva no `appsettings.json` nem versionada no Git. Configure-a no .NET User Secrets do projeto `PulseOps.Api`, utilizando **a mesma senha** definida no `.env` do Passo 1:
 ```bash
-dotnet user-secrets set "ConnectionStrings:PulseOps" "Host=127.0.0.1;Port=5432;Database=pulseops;Username=pulseops;Password=pulseops" --project src/backend/PulseOps.Api
+dotnet user-secrets set "ConnectionStrings:PulseOps" "Host=127.0.0.1;Port=5432;Database=pulseops;Username=pulseops;Password=minha-senha-local" --project src/backend/PulseOps.Api
 ```
 
-### Passo 4 — Restaurar ferramentas locais do .NET (dotnet-ef)
-O projeto possui manifesto de ferramentas locais em `dotnet-tools.json` (instalado na W1):
+### Passo 4 — Restaurar ferramentas locais do .NET (dotnet-ef) (R3-02)
+A W1 versionou o manifesto de ferramentas locais na raiz do repositório em `./dotnet-tools.json` (commit `ca8acd2`), contendo `dotnet-ef` versão `10.0.14`.
+Na raiz do repositório, execute:
 ```bash
-dotnet tool restore
+dotnet tool restore --tool-manifest ./dotnet-tools.json
 ```
-Isso garante a disponibilidade do comando `dotnet tool run dotnet-ef`.
+*(Caso prefira restaurar pelo padrão de busca do CLI na raiz, `dotnet tool restore` opera sobre o mesmo arquivo).*
+*(Alternativa via ferramenta global: se o desenvolvedor já mantiver `dotnet-ef` 10.0.14 instalado globalmente com `dotnet tool install --global dotnet-ef --version 10.0.14`, pode utilizar o comando `dotnet ef` diretamente).*
 
 ### Passo 5 — Aplicar migrations do EF Core no banco PostgreSQL
 ```bash
@@ -175,7 +183,7 @@ dotnet tool run dotnet-ef database update \
   --project src/backend/PulseOps.Infrastructure \
   --startup-project src/backend/PulseOps.Api
 ```
-Verifique a saída indicando que as tabelas de monitores foram criadas no PostgreSQL.
+Verifique a saída indicando que as migrations foram aplicadas com sucesso e as tabelas criadas no PostgreSQL.
 
 ### Passo 6 — Iniciar a API ASP.NET Core
 ```bash
@@ -197,25 +205,26 @@ curl -X POST http://127.0.0.1:5000/api/monitors \
 ```
 Resposta esperada: HTTP 201 Created com JSON contendo o `id` gerado.
 
-### Passo 8 — Iniciar o frontend Angular com proxy
-Em um novo terminal:
+### Passo 8 — Instalar dependências e iniciar o frontend Angular com proxy (R3-03)
+Em um clone limpo, a pasta `node_modules` não está presente. Em outro terminal, navegue até a pasta do frontend, instale as dependências com `npm ci` e inicie o dev server:
 ```bash
 cd src/frontend/pulseops-web
+npm ci
 npm start
 ```
-O servidor Angular iniciará em `http://localhost:4200` com o arquivo `proxy.conf.json` configurado, encaminhando `/api` diretamente para `http://127.0.0.1:5000`.
+O comando `npm start` inicia o servidor Angular em `http://localhost:4200` aplicando o proxy de desenvolvimento configurado em `proxy.conf.json`, encaminhando requisições para `/api` diretamente para `http://127.0.0.1:5000`.
 
 ### Passo 9 — Validações visuais no navegador
 Abra `http://localhost:4200` no navegador:
 1. **Estado Success:** O monitor "API Exemplo" será exibido no grid responsivo com crachá **Habilitado** (verde), URL e intervalo `60s`.
 2. **Override dinâmico em runtime (R2-01):**
-   - Abra as Ferramentas de Desenvolvedor (F12) e vá para a aba **Console**.
+   - Abra o Console do DevTools (F12).
    - Defina um alvo alternativo em tempo de execução:
      ```javascript
      window.__PULSEOPS_API_URL__ = 'http://127.0.0.1:5001';
      ```
-   - Sem recarregar a página, clique no botão **"Atualizar"** no cabeçalho da interface.
-   - Na aba **Network**, observe que a requisição é disparada imediatamente para `http://127.0.0.1:5001/api/monitors`.
+   - Sem recarregar a página, clique no botão **"Atualizar"** no cabeçalho.
+   - Na aba Network, observe que a requisição é disparada imediatamente para `http://127.0.0.1:5001/api/monitors`.
    - Para retornar ao proxy padrão, execute no console:
      ```javascript
      delete window.__PULSEOPS_API_URL__;
@@ -224,17 +233,17 @@ Abra `http://localhost:4200` no navegador:
 3. **Estado Error e Retry:**
    - Interrompa a API no terminal correspondente (Ctrl+C).
    - Clique no botão **"Atualizar"** na interface web.
-   - A tela exibirá o estado de erro amigável com mensagem descritiva e o botão **"Tentar novamente"**.
+   - A tela exibirá o estado de erro com mensagem descritiva e o botão **"Tentar novamente"**.
    - Reinicie a API (`dotnet run`) e clique em **"Tentar novamente"**; a listagem se restabelecerá com sucesso.
 
 ---
 
 ## 9. Recomendação técnica
 
-**APROVADO_TECNICAMENTE** — Todos os apontamentos da auditoria independente CH-AUD-W2-R2 (R2-01, R2-02 e R2-03) foram sanados com precisão, com testes automatizados dedicados e guia reproduzível. O Draft PR #6 está pronto para nova auditoria independente do ChatGPT.
+**APROVADO_TECNICAMENTE** — Todas as inconsistências documentais apontadas na auditoria independente CH-AUD-W2-R3 (R3-01, R3-02 e R3-03) foram corrigidas com máxima precisão e rastreabilidade. O Draft PR #6 está pronto para revisão documental final e parecer conclusivo do ChatGPT.
 
 ---
 
 ## 10. Decisão necessária do PO
 
-**PENDENTE** — Aguardando nova auditoria independente do ChatGPT e subsequente decisão explícita de homologação e merge pelo Product Owner (Hallan). Proibido merge automático.
+**PENDENTE** — Aguardando conclusão da auditoria independente do ChatGPT e subsequente decisão explícita de homologação e merge pelo Product Owner (Hallan). Proibido merge automático.
