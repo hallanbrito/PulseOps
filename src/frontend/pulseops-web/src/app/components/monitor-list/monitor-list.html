@@ -1,0 +1,107 @@
+<section class="monitors-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Monitores de Serviço</h1>
+      <p class="page-subtitle">Acompanhe a lista de serviços HTTP configurados no PulseOps.</p>
+    </div>
+    @if (state() === 'success' || state() === 'empty') {
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="loadMonitors()"
+        aria-label="Atualizar lista de monitores"
+      >
+        <span class="btn-icon">↻</span> Atualizar
+      </button>
+    }
+  </div>
+
+  @switch (state()) {
+    @case ('loading') {
+      <div class="state-container loading-state" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="state-title">Carregando monitores...</p>
+        <p class="state-text">Consultando a API do PulseOps.</p>
+      </div>
+    }
+
+    @case ('empty') {
+      <div class="state-container empty-state">
+        <div class="state-icon" aria-hidden="true">📋</div>
+        <h2 class="state-title">Nenhum monitor cadastrado</h2>
+        <p class="state-text">Ainda não existem serviços HTTP registrados para monitoramento.</p>
+        <button type="button" class="btn btn-secondary" (click)="loadMonitors()">
+          Verificar novamente
+        </button>
+      </div>
+    }
+
+    @case ('error') {
+      <div class="state-container error-state" role="alert">
+        <div class="state-icon error-icon" aria-hidden="true">⚠</div>
+        <h2 class="state-title">Erro ao carregar monitores</h2>
+        <p class="state-text">{{ errorMessage() }}</p>
+        <button type="button" class="btn btn-primary" (click)="retry()">Tentar novamente</button>
+      </div>
+    }
+
+    @case ('success') {
+      <div class="monitors-content">
+        <div class="summary-bar">
+          <span class="summary-count">
+            Total de monitores: <strong>{{ monitors().length }}</strong>
+          </span>
+        </div>
+
+        <div class="monitors-grid">
+          @for (monitor of monitors(); track monitor.id) {
+            <article class="monitor-card" [class.is-disabled]="!monitor.enabled">
+              <header class="card-header">
+                <h2 class="monitor-name">{{ monitor.name }}</h2>
+                <span
+                  class="status-badge"
+                  [class.status-enabled]="monitor.enabled"
+                  [class.status-disabled]="!monitor.enabled"
+                  [title]="'Configuração: ' + (monitor.enabled ? 'Habilitado' : 'Desabilitado')"
+                >
+                  {{ monitor.enabled ? 'Habilitado' : 'Desabilitado' }}
+                </span>
+              </header>
+
+              <div class="card-body">
+                <div class="info-row">
+                  <span class="info-label">Alvo:</span>
+                  <a
+                    [href]="monitor.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="info-url"
+                    [title]="monitor.url"
+                  >
+                    {{ monitor.url }}
+                  </a>
+                </div>
+
+                <div class="info-row">
+                  <span class="info-label">Intervalo:</span>
+                  <span class="info-value">{{ monitor.intervalSeconds }}s</span>
+                </div>
+
+                <div class="info-row">
+                  <span class="info-label">Criado em:</span>
+                  <span class="info-value">{{
+                    monitor.createdAtUtc | date: 'dd/MM/yyyy HH:mm'
+                  }}</span>
+                </div>
+              </div>
+
+              <footer class="card-footer">
+                <span class="monitor-id" [title]="monitor.id">ID: {{ monitor.id }}</span>
+              </footer>
+            </article>
+          }
+        </div>
+      </div>
+    }
+  }
+</section>
