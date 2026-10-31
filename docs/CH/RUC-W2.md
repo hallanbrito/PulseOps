@@ -1,4 +1,4 @@
-# RUC/1.0 — PulseOps — Fatia W2 (Tentativa 5 — Correções CH-AUD-W2-R4)
+# RUC/1.0 — PulseOps — Fatia W2 (Tentativa 5 + adendo de homologação CH-AUD-W2-R7)
 
 > Relatório Universal C.H. em conformidade com o protocolo CHDevFlow. Registra as evidências verificáveis da implementação técnica e das rodadas de correção da auditoria da Fatia W2. Não constitui homologação de PO nem autorização de merge.
 
@@ -139,7 +139,9 @@ Total de arquivos impactados em relação a `origin/main`: **21 arquivos** (1 re
 
 ## 8. Procedimento de validação manual (Smoke Test com API e PostgreSQL reais em clone limpo)
 
-> **Aviso de integridade:** Este procedimento destina-se à validação humana e auditoria independente. A execução ponta-a-ponta contra banco PostgreSQL de longa duração NÃO foi realizada na sessão automatizada do agente (onde apenas os testes xUnit com Testcontainers efêmero foram executados).
+> **Aviso de integridade:** Este procedimento foi escrito antes da validação humana. A sessão original do AGY não executou smoke test contra PostgreSQL persistente, mas **o PO o executou em 31/10/2026** (ver §11, CH-AUD-W2-R6/R7).
+>
+> **Ambientes já existentes:** antes de copiar o `.env`, iniciar containers ou aplicar migrations, consulte [Operação local](../OPERACAO_LOCAL.md). Este roteiro descreve **banco novo**; não execute `docker compose up/down` se outro projeto Compose já mantiver `pulseops-postgres` em execução.
 
 ### Pré-requisitos
 - Docker e Docker Compose instalados e em execução.
@@ -148,9 +150,9 @@ Total de arquivos impactados em relação a `origin/main`: **21 arquivos** (1 re
 
 ### Passo 1 — Configurar variáveis de ambiente do PostgreSQL (R3-01)
 O arquivo `compose.yaml` requer as variáveis `POSTGRES_DB`, `POSTGRES_USER` e `POSTGRES_PASSWORD` no arquivo `.env`.
-A partir da raiz do repositório, copie o template:
+Somente em um ambiente **novo**, e se não houver `.env`, copie o template:
 ```bash
-cp .env.example .env
+cp -n .env.example .env
 ```
 O `.env.example` versionado contém:
 ```env
@@ -160,18 +162,20 @@ POSTGRES_PASSWORD=change-me-local-only
 ```
 Edite o arquivo `.env` para definir uma senha local segura para desenvolvimento (exemplo: altere `change-me-local-only` para `minha-senha-local`). **Nunca versione o `.env`.**
 
-### Passo 2 — Subir o banco PostgreSQL via Docker
+### Passo 2 — Verificar antes de iniciar um banco novo
+```bash
+docker compose ls
+docker ps -a --filter name=pulseops-postgres --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+```
+**Apenas se não existir instância compartilhada e o ambiente for realmente novo**, inicie:
 ```bash
 docker compose up -d
 docker compose ps
 ```
-Aguarde até que o contêiner `pulseops-postgres` apresente status `healthy` (porta `5432:5432`).
+Se o container já existir em outra worktree, **não execute** `up`, `down`, `down -v` ou limpeza de volumes. Verifique o projeto e volume proprietário no [guia](../OPERACAO_LOCAL.md). Aguarde `healthy` para uma instância nova.
 
-### Passo 3 — Configurar a connection string na API via .NET User Secrets (R3-01)
-Conforme a governança da W1, a connection string local não é salva no `appsettings.json` nem versionada no Git. Configure-a no .NET User Secrets do projeto `PulseOps.Api`, utilizando **a mesma senha** definida no `.env` do Passo 1:
-```bash
-dotnet user-secrets set "ConnectionStrings:PulseOps" "Host=127.0.0.1;Port=5432;Database=pulseops;Username=pulseops;Password=minha-senha-local" --project src/backend/PulseOps.Api
-```
+### Passo 3 — Configurar a API com .NET User Secrets (R3-01)
+A conexão local pertence ao User Secrets de `PulseOps.Api`, nunca ao repositório. **Não presuma** que o `.env` da worktree W2 contenha a senha de um banco previamente inicializado. Cadastre a **credencial validada do container em uso** com o procedimento de entrada oculta em [Operação local](../OPERACAO_LOCAL.md#3-configuração-segura-da-api-com-user-secrets), sem colocar senha em histórico de shell ou GitHub. Reinicie a API após a configuração.
 
 ### Passo 4 — Restaurar ferramentas locais do .NET (dotnet-ef) (R4-01)
 O repositório agora adota o caminho convencional da Microsoft `.config/dotnet-tools.json`, contendo `dotnet-ef` versão `10.0.14`.
@@ -244,10 +248,56 @@ Abra `http://localhost:4200` no navegador:
 
 ## 9. Recomendação técnica
 
-**APROVADO_TECNICAMENTE** — O apontamento R4-01 foi sanado adotando a convenção oficial da Microsoft `.config/dotnet-tools.json`, garantindo a execução fluida e reproduzível de `dotnet tool restore` e `dotnet tool run dotnet-ef`. O Draft PR #6 está pronto para revisão final do ChatGPT.
+**APROVADO_TECNICAMENTE** para o escopo funcional da W2, considerando R4-01 e as evidências posteriores CH-AUD-W2-R6/R7 de execução real no notebook. O diagnóstico de ambiente está registrado em [Operação local](../OPERACAO_LOCAL.md). Uma melhoria de segurança para restringir a exposição da porta PostgreSQL 5432 ao localhost será avaliada separadamente. Não há comprovação de CI remoto nesta rodada, nem autorização de merge.
 
 ---
 
 ## 10. Decisão necessária do PO
 
-**PENDENTE** — Aguardando parecer de homologação final do ChatGPT e subsequente decisão explícita de merge pelo Product Owner (Hallan). Proibido merge automático.
+**PENDENTE DE DECISÃO EXPLÍCITA DO PO** — Parecer técnico favorável no escopo testado. O PR #6 permanece **Draft**, sem merge na `main`, release ou publicação.
+
+---
+
+## 11. Homologação operacional independente — 31/10/2026
+
+**Contexto:** execução manual pelo Product Owner no CachyOS, worktree `~/PulseOps-W2-Teste`, branch `agy/w2-angular-monitores`, baseline `fac14560e686202dbd8c1aba115a870618028425`. O ChatGPT avaliou as saídas HTTP, logs e capturas enviados; **não executou os comandos diretamente no computador do PO**.
+
+Registros no GitHub: [CH-AUD-W2-R6](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6550699474) (smoke test) e [CH-AUD-W2-R7](https://github.com/hallanbrito/PulseOps/pull/6#issuecomment-6550717215) (testes automatizados).
+
+### 11.1. Evidências funcionais (R6)
+
+| ID | Verificação | Resultado observado |
+|---|---|---|
+| H01 | `GET /health` e `GET /api/monitors` | Ambos HTTP **200**, com leitura real de dados persistidos no PostgreSQL. |
+| H02 | Listagem Angular em `localhost:4200` | 2 monitores originais, dados coerentes com JSON da API. |
+| H03 | Desligar API e atualizar Angular | Proxy HTTP **502**; erro controlado com **Tentar novamente**. |
+| H04 | Reiniciar API e tentar novamente | Listagem recuperada. |
+| H05 | `POST /api/monitors` | HTTP **201 Created**, ID `0e2c9a92-9f8d-4d58-b8d7-5a40379233c6`, nome `W2 Corujao Smoke Test`. |
+| H06 | Nova listagem Angular | Contagem aumentou de 2 para **3** monitores. |
+| H07 | Reinício da API + consulta por ID | HTTP **200** após restart, comprovando persistência do cadastro. |
+| H08 | Firefox em **390 px** | Cartões empilhados, texto legível e sem overflow horizontal aparente. Não cobre todos os viewports nem auditoria completa de acessibilidade. |
+| H09 | Override `window.__PULSEOPS_API_URL__` para porta 5001 | Requisição para rota alternativa e falha tratada; removido override, retry recuperou lista de 3 monitores sem reload. A mensagem de CORS da porta indisponível não demonstra bug de CORS. |
+
+A etiqueta **Habilitado** corresponde a `enabled: true`; **não** significa que uma rotina real de verificação de disponibilidade esteja implementada.
+
+### 11.2. Testes locais reproduzidos (R7)
+
+| Comando | Resultado com logs enviados pelo PO |
+|---|---|
+| `dotnet test PulseOps.slnx` | **2/2 PASS**, zero falhas; infraestrutura via PostgreSQL efêmero com Testcontainers. |
+| `npm test -- --watch=false` | **14/14 PASS** em 3 arquivos (6 serviço, 2 app, 6 componente). |
+| `npm run build` | **PASS**, pacote inicial 249,44 kB (transferência estimada 69,11 kB). |
+
+A reprodução foi **local e humana**, não constitui comprovação automática de GitHub Actions/CI remoto no HEAD.
+
+### 11.3. Incidente de credenciais entre worktrees
+
+- **Sintomas:** a API funcionava em `/health`, mas `/api/monitors` retornava HTTP 500; inicialmente sem senha Npgsql, depois PostgreSQL `28P01` (senha rejeitada).
+- **Diagnóstico confirmado:** o `.env` de `PulseOps-W2-Teste` continha senha diferente da senha efetivamente aceita pelo container `pulseops-postgres` do projeto Docker Compose `pulseops`, com volume `pulseops_pulseops_postgres_data`. Autenticação TCP na porta 5432 aceitou a credencial do container original e rejeitou a do `.env` da W2.
+- **Correção:** atualizado **apenas o .NET User Secrets local** da API, usando a senha já validada; após reinício, a consulta passou a HTTP **200**. Nenhum dado apagado, volume removido, senha de banco redefinida ou segredo versionado.
+- **Prevenção:** [Operação local](../OPERACAO_LOCAL.md), incluindo identificação do container/volume real, separação do `.env` do Compose e User Secrets do .NET, e cautela com comandos que recriam serviços.
+- **Segurança futura:** revisar publicação da porta `5432` em todas as interfaces e considerar binding em `127.0.0.1` em uma tarefa própria, sem afetar esta homologação.
+
+### 11.4. Parecer e portão PO
+
+**APROVADO_TECNICAMENTE** no escopo funcional e de testes locais apresentados. **Não equivale a merge, deploy, conclusão de auditoria completa de segurança/acessibilidade nem comprovação de CI remota.** O [PR #6](https://github.com/hallanbrito/PulseOps/pull/6) continua Draft até decisão explícita do PO. Ver [STATUS](../STATUS.md).
